@@ -18,7 +18,7 @@ def get_repo_type():
 
 def get_tag_tuples(repo_type):
     tag_getter = REPO_TAG_GETTERS[repo_type]
-    return tag_getter()
+    yield from tag_getter()
 
 
 def main():
@@ -30,14 +30,15 @@ def main():
      
     repo_type = get_repo_type()
     if not repo_type:
-        if args.verbose:
-            print('Current working directory is not a repository')
+        print('Current working directory is not a repository.')
         sys.exit(1)
 
     if args.verbose: 
         print('Gathering information for {} repo'.format(repo_type))
     tag_tuples = get_tag_tuples(repo_type)
-
     tags = [Tag(tag_tuple) for tag_tuple in tag_tuples]
+    if not tags:
+        print('This repo has no associated tags.')
+        sys.exit(1)
     view_tags(tags, file_name=args.file)
 
