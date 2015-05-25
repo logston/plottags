@@ -4,13 +4,14 @@ import os
 import pickle
 import sys
 
+from plottags import __version__
 from .constants import REPO_TAG_INFO_GETTERS
 from .models import Tag
 from .views import view_tags
 
 
 CWD = os.getcwd() 
-CACHED_RESULTS_FILENAME = '.plottags_parse_results.tmp'
+CACHED_RESULTS_FILENAME = '.plottags_parse_results-{}.tmp'.format(__version__)
 
 
 def path_exists(basename):
@@ -36,55 +37,27 @@ def extend_tag_tuples(tags):
         len_diff = max_len - len(tag.tag_tuple)
         if len_diff:
             tag.tag_tuple = tag.tag_tuple + tuple(0 for _ in range(len_diff)) 
-    return tags, max_len
-
-
-def value_tag_tuples(tags, tag_tuple_length):
-    """
-    Get a tuple of values that represent the relative version 
-    values for each version type; major, minor, micro.
-    """
-    for index in range(tag_tuple_length):
-        if index == 0:
-            for tag in tags:
-                tag.value_tuple = (tag.tag_tuple[0],)
-        else: 
-            version_groups = defaultdict(set)
-            group_max = {}
-            for tag in tags:
-                version_groups[tag.tag_tuple[:index]].add(tag.tag_tuple[index])
-            # find max of each group
-            for version, set_ in version_groups.items():
-                group_max[version] = max(set_)
-            # update value tuple with new version value
-            for tag in tags:
-                denom = group_max[tag.tag_tuple[:index]] 
-                value = tag.tag_tuple[index] / denom if denom else 0                 
-                tag.value_tuple += (value,)
+    return tags
 
 
 def value_tags(tags):
-    weights = [1, 0.5, 0.1]
+    weights = [1 / i**2 for i in range(1, 10)]
+    tags.sort(key=lambda t: t.tag_tuple) 
+
+    value = 0
+    tuple_length = len(tags[0].tag_tuple)
+    previous_tag_tuple = tuple(0 for _ in range(tuple_length))
     for tag in tags:
-        tag.value = sum(map(lambda x: x[0] * x[1], zip(tag.value_tuple, weights)))
+        diff_index = 0
+        for i in range(tuple_length):
+            if tag.tag_tuple[i] != previous_tag_tuple[i]:
+                diff_index = i
+                break
+        value += weights[diff_index]
+        tag.value = value
+        previous_tag_tuple = tag.tag_tuple
 
-    # Offset value of tag by value of previous versions. 
-    # Drop support of offsets
-    #values_by_major_version = defaultdict(set)
-    #for tag in tags:
-    #    values_by_major_version[tag.tag_tuple[0]].add(tag.value)
-    #max_value_by_major_version = {k: max(v) for k, v in values_by_major_version.items()}
-    #major_versions = max_value_by_major_version.keys()
-    #for i, version in enumerate(sorted(major_versions)):
-    #    # Continue if there is no prior max value
-    #    if i == 0:
-    #        continue
-    #    prior_max_value = max_value_by_major_version[version - 1]
-    #    for tag in tags:
-    #        if tag.tag_tuple[0] == version:
-    #            tag.value += prior_max_value
-
-
+        
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-q', '--quiet', help='decrease output verbosity', 
@@ -113,14 +86,14 @@ def main():
         if not tags:
             print('This repo has no associated tags.')
             sys.exit(1)
-        tags, length = extend_tag_tuples(tags)
-        if not args.quiet:
-            print('Value tags')
-        value_tag_tuples(tags, length)
-        value_tags(tags)
+        tags = extend_tag_tuples(tags)
         if not args.nocache:
             with open(CACHED_RESULTS_FILENAME, 'wb') as fd:
                 pickle.dump(tags, fd, pickle.HIGHEST_PROTOCOL)
+
+    if not args.quiet:
+        print('Value tags')
+    value_tags(tags)
      
     if not args.quiet:
         print('Building plot')
