@@ -1,7 +1,16 @@
+import random
+
 import matplotlib.pyplot as plt
 
 
-COLORS = {0: 'b', 1: 'r', 2: 'm', 3: 'y'}
+color_by_version = {}
+
+
+def colors(version):
+    global color_by_version
+    if version not in color_by_version:
+        color_by_version[version] = (random.random(), random.random(), random.random())
+    return color_by_version[version]
 
 
 def view_tags(tags, file_name=None):
@@ -18,7 +27,7 @@ def view_tags(tags, file_name=None):
             if tag.tag_tuple[0] == major_version:
                 dates.append(tag.dt)
                 values.append(tag.value)
-        axes.scatter(dates, values, c=COLORS[major_version])
+        axes.scatter(dates, values, c=colors(major_version))
         axes.annotate('Version {}.x'.format(major_version),
                       xy=(dates[0], values[0]),
                       xytext=(60, 0),
