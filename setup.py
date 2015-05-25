@@ -3,11 +3,11 @@ from setuptools import setup
 import plottags
 
 
-#with open("LICENSE") as fd:
-#    LICENSE = fd.read()
+with open("LICENSE") as fd:
+    LICENSE = fd.read()
 
-LICENSE = ''
-README = ''
+with open("README.rst") as fd:
+    README = fd.read()
 
 setup(
     name='plottags',
@@ -29,12 +29,14 @@ setup(
         'matplotlib>=1.4.2',
     ],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: Implementation :: CPython',
+        'Topic :: Utilities',
     ],
 )
 
