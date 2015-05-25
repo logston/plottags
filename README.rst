@@ -3,7 +3,7 @@ plottags
 
 |downloads| |license|
 
-A command line utility for viewing the trend of commit tagging over time.
+A command line utility for viewing the trend of commit tagging within a repository over time.
 
 
 
@@ -32,7 +32,6 @@ Example Results:
 This plot is from the CPython project.
 
 |cpython|
-
 
 
 .. |cpython| image:: https://raw.githubusercontent.com/logston/plottags/master/cpython.png
