@@ -5,7 +5,7 @@ plottags
 
 A command line utility for viewing the trend of commit tagging within a repository over time.
 
-
+Currently supports GIT and Mercurial repositories.
 
 Fun fact, plottags was the 60115th package registered with PyPI.
 
